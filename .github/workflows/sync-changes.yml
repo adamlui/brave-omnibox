@@ -1,0 +1,86 @@
+name: Sync _locales/* between <chromium|firefox>/extension/, then * to adamlui/ai-apps/brave-omnibox/*
+
+on:
+  push:
+    branches: [main]
+    paths: ["**", "!.*", "!package*json", "!eslint.config*"]
+
+jobs:
+  build:
+    if: (github.repository == 'adamlui/brave-omnibox') && (github.event.commits[0].committer.username != 'kudo-sync-bot')
+    runs-on: ubuntu-latest
+    env:
+      GIT_AUTHOR_NAME: ${{ github.event.commits[0].author.name }}
+      GIT_AUTHOR_EMAIL: ${{ github.event.commits[0].author.email }}
+      GIT_COMMITTER_NAME: kudo-sync-bot
+      GIT_COMMITTER_EMAIL: auto-sync@kudoai.com
+
+    steps:
+
+      - name: Checkout adamlui/brave-omnibox
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.REPO_SYNC_PAT }}
+          repository: adamlui/brave-omnibox
+          path: adamlui/brave-omnibox
+          fetch-depth: 2
+
+      - name: Checkout adamlui/ai-apps
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.REPO_SYNC_PAT }}
+          repository: adamlui/ai-apps
+          path: adamlui/ai-apps
+
+      - name: Sync _locales/* between <chromium|firefox>/extension/
+        run: |
+          cd ${{ github.workspace }}/adamlui/brave-omnibox
+          ff_dir="firefox/extension/_locales"
+          chromium_dir="chromium/extension/_locales"
+          
+          # Loop thru all lang dirs in firefox
+          for locale in $(find "$ff_dir" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;) ; do
+              ff_file="$ff_dir/$locale/messages.json"
+              chromium_file="$chromium_dir/$locale/messages.json"
+              if [[ -f "$ff_file" && -f "$chromium_file" ]] ; then
+
+                  # Get the latest commit timestamps for both files
+                  ff_timestamp=$(git log -1 --format="%ct" -- "$ff_file" 2>/dev/null || echo 0)
+                  chromium_timestamp=$(git log -1 --format="%ct" -- "$chromium_file" 2>/dev/null || echo 0)
+          
+                  # Sync the most recently updated file to the other dir
+                  if [[ $ff_timestamp -gt $chromium_timestamp ]] ; then
+                      cp -f "$ff_file" "$chromium_file"
+                  elif [[ $chromium_timestamp -gt $ff_timestamp ]] ; then
+                      cp -f "$chromium_file" "$ff_file"
+                  fi
+              fi
+          done
+
+      - name: Sync * to adamlui/ai-apps/brave-omnibox/*
+        run: |
+          rsync -avhr --delete --exclude={'.*','eslint*','package*json'} \
+            ${{ github.workspace }}/adamlui/brave-omnibox/ \
+            ${{ github.workspace }}/adamlui/ai-apps/brave-omnibox/
+
+      - name: Escape backticks in commit msg
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          echo "ESCAPED_MSG<<EOF" >> $GITHUB_ENV
+          echo "$COMMIT_MSG" | sed 's/`/\`/g' >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Push changes to adamlui/brave-omnibox
+        run: |
+          cd ${{ github.workspace }}/adamlui/brave-omnibox
+          git add .
+          git commit -n -m "$ESCAPED_MSG ↞ [auto-sync from \`adamlui/brave-omnibox\`]" || true
+          git push
+
+      - name: Push changes to adamlui/ai-apps
+        run: |
+          cd ${{ github.workspace }}/adamlui/ai-apps
+          git add .
+          git commit -n -m "$ESCAPED_MSG ↞ [auto-sync from \`adamlui/brave-omnibox\`]" || true
+          git push
