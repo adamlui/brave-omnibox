@@ -20,6 +20,6 @@ export default [
             globals: { chrome: 'readonly' }
         }
     },
-    { files: ['**/*.mjs', '**/components/*.js', '**/lib/*.js'], languageOptions: { sourceType: 'module' }},
+    { files: ['**/*.mjs'], languageOptions: { sourceType: 'module' }},
     { files: ['**/*.json'], ...json.configs['recommended'] }
 ];
