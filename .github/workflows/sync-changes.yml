@@ -70,6 +70,11 @@ jobs:
           echo "ESCAPED_MSG<<EOF" >> $GITHUB_ENV
           echo "$COMMIT_MSG" | sed 's/`/\`/g' >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+      
+      - name: Import GPG Key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          git config --global user.signingkey "${{ secrets.GPG_PRIVATE_ID }}"  # Set GPG key for signing
 
       - name: Push changes to adamlui/brave-omnibox
         run: |
