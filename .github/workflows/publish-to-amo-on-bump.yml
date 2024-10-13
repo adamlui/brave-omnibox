@@ -2,7 +2,7 @@ name: Publish to Firefox Store on Version Bump
 
 on:
   push:
-    branches: [ff-publish-sandbox]
+    branches: [main]
     paths: [firefox/extension/manifest.json]
 
 jobs:
