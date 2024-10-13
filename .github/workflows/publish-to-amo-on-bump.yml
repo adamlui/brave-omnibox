@@ -41,4 +41,4 @@ jobs:
           api_key: ${{ secrets.AMO_ISSUER }}
           api_secret: ${{ secrets.AMO_SECRET }}
           guid: "brave.omnibox@adamlui.com"
-          xpi_path: ${{ github.workspace }}/adamlui/brave-omnibox
+          xpi_path: ${{ github.workspace }}/adamlui/brave-omnibox/extension.zip
