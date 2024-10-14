@@ -1,4 +1,4 @@
-name: Publish to AMO on FF manifest version bump
+name: Publish to AMO on FF version bump
 
 on:
   push:
