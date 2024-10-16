@@ -33,12 +33,12 @@ jobs:
         run: |
           cd ${{ github.workspace }}/adamlui/brave-omnibox/firefox/extension
           zip -r ../../extension.zip .
-
+        
       - name: Publish to AMO
         if: env.version_changed == 'true'
-        uses: yayuyokitano/firefox-addon@v0.0.6-alpha
+        uses: cardinalby/webext-buildtools-firefox-addons-action@v1
         with:
-          api_key: ${{ secrets.AMO_ISSUER }}
-          api_secret: ${{ secrets.AMO_SECRET }}
-          guid: "brave.omnibox@adamlui.com"
-          xpi_path: ${{ github.workspace }}/adamlui/brave-omnibox/extension.zip
+          zipFilePath: ${{ github.workspace }}/adamlui/brave-omnibox/extension.zip
+          extensionId: 'brave.omnibox@adamlui.com'
+          jwtIssuer: ${{ secrets.AMO_ISSUER }}
+          jwtSecret: ${{ secrets.AMO_SECRET }}
