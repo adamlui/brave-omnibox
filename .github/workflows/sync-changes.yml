@@ -59,7 +59,7 @@ jobs:
 
       - name: Sync ** to adamlui/ai-apps/brave-omnibox/
         run: |
-          rsync -avhr --delete --exclude={'.*','eslint*','package*.json','requirements*.txt'} \
+          rsync -avhr --delete --exclude={'.*','eslint*','package*.json'} \
             ${{ github.workspace }}/adamlui/brave-omnibox/ \
             ${{ github.workspace }}/adamlui/ai-apps/brave-omnibox/
 
