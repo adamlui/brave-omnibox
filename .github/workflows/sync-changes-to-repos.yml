@@ -20,6 +20,7 @@ jobs:
       - name: Checkout adamlui/brave-omnibox
         uses: actions/checkout@v4
         with:
+          token: ${{ secrets.REPO_SYNC_PAT }}
           path: adamlui/brave-omnibox
           fetch-depth: 2
 
